@@ -1,6 +1,7 @@
 import smtplib
 import json
 from email.mime.text import MIMEText
+from random import choice
 
 def get_account_info():
     ''' Need to pull password info from file which doesn't appear in git 
@@ -32,12 +33,27 @@ def change_number_seconds(seconds_today, increment):
     with open(seconds_file, 'w') as f:
         f.write(str(seconds_tomorrow))
 
+def get_thinspo_quote():
+    '''This function returns a random quote pulled from the thinspo file. This
+    function assumes that each quote is separated by a newline character.'''
+    thinspo_filename = 'thinspo.txt'
+    with open(thinspo_filename, 'r') as f:
+        full_text = f.read()
+
+    quote_list = full_text.split('\n')
+    if quote_list[-1] == '':
+        quote_list = quote_list[:-1]
+
+    todays_quote = choice(quote_list)
+    return todays_quote 
+
 def main():
     '''This is where the main logic for sending the email will reside.'''
     
     login_info = get_account_info()
     login_email = login_info['email']
     login_password = login_info['password']
+    thinspo_quote = get_thinspo_quote()
 
     seconds_today = get_number_seconds()
     
@@ -45,11 +61,14 @@ def main():
     subject_text = '''Plankin\' time! {seconds} seconds today.'''.format(
             seconds = seconds_today)
     recepients = ['hben592@gmail.com', 'etam22@gmail.com']
-    body_text = '''
-        You need to plank today!!
-        To be da best, you have to plank for {seconds} seconds today.
-        If you don\'t plank for that long you suck.
-        '''.format(seconds = seconds_today)
+    body_text = """\
+    You need to plank today!!
+    To be da best, you have to plank for {seconds} seconds today.
+    If you don\'t plank for that long you suck.
+    Your motivational quote for today is:
+
+    {quote}
+    """.format(seconds = seconds_today, quote = thinspo_quote)
 
     msg = MIMEText(body_text)
     msg['Subject'] = subject_text
