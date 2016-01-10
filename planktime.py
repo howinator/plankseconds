@@ -2,40 +2,55 @@ import smtplib
 import json
 
 def get_account_info():
-''' Need to pull password info from file which doesn't appear in git repo
-This returns a python dictionary containing an e-mail and a password.
-'''
+    ''' Need to pull password info from file which doesn't appear in git 
+    repo
+    This returns a python dictionary containing an e-mail and a password.
+    The keys of this dictionary are "email" and "password".'''
     json_account_info = "account.json"
     with open(json_account_info) as account_json_file:
         json_decoded = json.load(account_json_file)
     return json_decoded
 
 def get_number_seconds():
-''' Need this function so that we can pull the number of seconds each day
-from a persistent file.
-Returns an integer containing the number of seconds for that day.
-'''
+    ''' Need this function so that we can pull the number of seconds each 
+    day
+    from a persistent file.
+    Returns an integer containing the number of seconds for that day.
+    '''
     seconds_file = "number_seconds.txt"
     with open(seconds_file, 'r') as f:
         number_of_seconds = f.read()
-    return number_of_seconds
+    return int(number_of_seconds)
 
-def change_number_seconds(number_today):
-'''This function will actually iterate the file one second and save it.
-Returns no value.
-'''
+def change_number_seconds(seconds_today, increment):
+    '''This function will actually iterate the file one second and save it.
+    Returns no value.
+    '''
     seconds_file = "number_seconds.txt"
-    number_for_tomorrow = number_today + 1
+    seconds_tomorrow = seconds_today + increment
     with open(seconds_file, 'w') as f:
-        f.write(number_for_tomorrow)
-
-
+        f.write(str(seconds_tomorrow))
 
 def main():
+    '''This is where the main logic for sending the email will reside.'''
+    
+    login_info = get_account_info()
+    login_email = login_info['email']
+    login_password = login_info['password']
+
+    seconds_today = get_number_seconds()
+
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login("howiethebot@gmail.com", "a30S7*ODTgvMkjKvfF")
+    server.login(login_email, login_password)
 
-    msg = "Go plank!"
-    server.sendmail("howiethebot@gmail.com", "hben592@gmail.com", msg)
+    msg = '''
+        You need to plank today!!
+        To be da best, you have to plank for {seconds} seconds today.
+        If you don\'t plank for that long you suck.
+        '''.format(seconds = seconds_today)
+    server.sendmail(login_email, "etam22@gmail.com", msg)
     server.quit()
+    change_number_seconds(seconds_today, 1)
+
+main()

@@ -1,2 +1,3 @@
 account.json
 *.swp
+__pycache__
