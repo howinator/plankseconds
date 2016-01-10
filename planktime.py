@@ -1,6 +1,5 @@
 import smtplib
 import json
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 def get_account_info():
