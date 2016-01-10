@@ -24,7 +24,64 @@ def get_number_seconds():
         number_of_seconds = f.read()
     return int(number_of_seconds)
 
-def change_number_seconds(seconds_today, increment):
+def convert_seconds_to_mins(num_seconds):
+    '''Returns a dictionary containing keys 'mins' and 'secs' '''
+
+    if num_seconds < 0:
+        time_dict = {'secs': num_seconds, 'mins': 0}
+    else:
+        # minutes is sure to be an integer because of integer division
+        minutes = num_seconds // 60
+        # seconds could be non-int e.g., num_seconds = 60.4
+        seconds = num_seconds % 60
+        seconds = round(seconds)
+
+        time_dict = {'secs': seconds, 'mins': minutes}
+    return time_dict
+
+def convert_seconds_to_string(num_seconds):
+    '''This function takes an integer and converts it into a formatted 
+    string with units. This assumes we will never plank for more than
+    59 minutes and 59 seconds.'''
+    one_hour = 60
+    time_dict = convert_seconds_to_mins(num_seconds)
+    minutes = time_dict['mins']
+    seconds = time_dict['secs']
+
+    # Need to pluralize units
+    if minutes == 1:
+        min_unit = "minute"
+    else:
+        min_unit = "minutes"
+    if seconds == 1:
+        sec_unit = "second"
+    else:
+        sec_unit = "seconds"
+
+    # Form string based off interval
+    if seconds < 0:
+        formatted_string = "ERROR: Less than 0 seconds."
+    elif minutes == 0 and seconds < 60:
+        formatted_string = """{sec} {s_unit} (0:{sec:02})""".format(
+                sec = seconds,
+                s_unit = sec_unit)
+    elif minutes >= 1 and minutes < one_hour:
+        # Did this so I wouldn't have to post-process
+        raw_string = ("{mints!s} {m_unit} and "
+                      "{sec!s} {s_unit} "
+                      "({mints:02}:{sec:02})")
+        formatted_string = raw_string.format(
+                sec = seconds, 
+                mints = minutes,
+                m_unit = min_unit,
+                s_unit = sec_unit)
+    else:
+        formatted_string = str(num_seconds) + " seconds ERROR"
+
+    return formatted_string
+
+
+def increment_number_seconds(seconds_today, increment):
     '''This function will actually iterate the file one second and save it.
     Returns no value.
     '''
@@ -56,19 +113,20 @@ def main():
     thinspo_quote = get_thinspo_quote()
 
     seconds_today = get_number_seconds()
+    time_string = convert_seconds_to_string(seconds_today)
     
     # Just setting some variables needed for the email
-    subject_text = '''Plankin\' time! {seconds} seconds today.'''.format(
-            seconds = seconds_today)
+    subject_text = '''Plankin\' time! {time} today.'''.format(
+            time = time_string)
     recepients = ['hben592@gmail.com', 'etam22@gmail.com']
     body_text = """\
     You need to plank today!!
-    To be da best, you have to plank for {seconds} seconds today.
+    To be da best, you have to plank for {time} today.
     If you don\'t plank for that long you suck.
     Your motivational quote for today is:
 
     {quote}
-    """.format(seconds = seconds_today, quote = thinspo_quote)
+    """.format(time=time_string, quote = thinspo_quote)
 
     msg = MIMEText(body_text)
     msg['Subject'] = subject_text
@@ -81,6 +139,5 @@ def main():
 
     server.sendmail(login_email, recepients, msg.as_string())
     server.quit()
-    change_number_seconds(seconds_today, 1)
+    increment_number_seconds(seconds_today, 1)
 
-main()
