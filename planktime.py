@@ -134,6 +134,7 @@ def main():
     msg['To'] = ", ".join(recepients)
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.set_debuglevel(0)
     server.starttls()
     server.login(login_email, login_password)
 
@@ -141,3 +142,4 @@ def main():
     server.quit()
     increment_number_seconds(seconds_today, 1)
 
+main()
