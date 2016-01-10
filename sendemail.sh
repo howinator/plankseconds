@@ -1,5 +1,5 @@
 #!/bin/bash
-source /usr/local/bin/virtualenvwrapper.sh
+source /home/howie/.local/bin/virtualenvwrapper.sh
 workon plank-env
-python planktime.py
+python ~/plankseconds/planktime.py
 deactivate
