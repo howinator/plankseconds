@@ -1,5 +1,7 @@
 import smtplib
 import json
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def get_account_info():
     ''' Need to pull password info from file which doesn't appear in git 
@@ -39,17 +41,27 @@ def main():
     login_password = login_info['password']
 
     seconds_today = get_number_seconds()
+    
+    # Just setting some variables needed for the email
+    subject_text = '''Plankin\' time! {seconds} seconds today.'''.format(
+            seconds = seconds_today)
+    recepients = ['hben592@gmail.com', 'etam22@gmail.com']
+    body_text = '''
+        You need to plank today!!
+        To be da best, you have to plank for {seconds} seconds today.
+        If you don\'t plank for that long you suck.
+        '''.format(seconds = seconds_today)
+
+    msg = MIMEText(body_text)
+    msg['Subject'] = subject_text
+    msg['From'] = login_email
+    msg['To'] = ", ".join(recepients)
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(login_email, login_password)
 
-    msg = '''
-        You need to plank today!!
-        To be da best, you have to plank for {seconds} seconds today.
-        If you don\'t plank for that long you suck.
-        '''.format(seconds = seconds_today)
-    server.sendmail(login_email, "etam22@gmail.com", msg)
+    server.sendmail(login_email, recepients, msg.as_string())
     server.quit()
     change_number_seconds(seconds_today, 1)
 
